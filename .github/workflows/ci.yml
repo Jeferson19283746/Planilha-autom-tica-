@@ -17,25 +17,17 @@ jobs:
         with:
           node-version: 20
       - name: Syntax check
-        run: |
-          node --check app.js
-          node --check js/core.js
-          node --check js/pages.js
-          node --check js/ui.js
-          node --check js/forms.js
-          node --check js/runtime.js
-          node --check server.mjs
-          node --check api-ai.js
+        run: npm run check
+      - name: Unit tests
+        run: npm test
       - name: Smoke test server
         run: |
           node server.mjs > /tmp/zahav.log 2>&1 &
           PID=$!
           sleep 2
+          curl --fail http://127.0.0.1:3000/api/health | grep '"ok":true'
           curl --fail http://127.0.0.1:3000/ >/dev/null
           curl --fail http://127.0.0.1:3000/js/core.js >/dev/null
-          curl --fail http://127.0.0.1:3000/js/pages.js >/dev/null
-          curl --fail http://127.0.0.1:3000/js/ui.js >/dev/null
-          curl --fail http://127.0.0.1:3000/js/forms.js >/dev/null
+          curl --fail http://127.0.0.1:3000/js/cloud.js >/dev/null
           curl --fail http://127.0.0.1:3000/js/runtime.js >/dev/null
-          curl --fail http://127.0.0.1:3000/styles.css >/dev/null
           kill $PID

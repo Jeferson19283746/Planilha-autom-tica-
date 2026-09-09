@@ -1,1 +1,1 @@
-// Zahav Finance OS v3: frontend modularizado em js/*.js.
+// Zahav Finance OS v4: frontend modularizado em js/*.js.

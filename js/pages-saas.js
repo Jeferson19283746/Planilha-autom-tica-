@@ -17,3 +17,13 @@ function superAdminPage(){
   <section class="card"><div class="section-title"><div><h3>Empresas clientes</h3><div class="sub">Controle de acesso, plano e assinatura de todas as empresas.</div></div><button class="btn" onclick="Saas.refreshAdminPage()">Atualizar</button></div><div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Status</th><th>Plano</th><th>Assinatura</th><th>Usuários</th><th>Cobrança</th><th></th></tr></thead><tbody>${orgs.length?orgs.map(o=>`<tr><td><b>${esc(o.name)}</b><small>${esc(o.billing_email||o.slug)}</small></td><td>${statusBadge(o.status)}</td><td>${esc(o.plan?.name||'-')}</td><td>${statusBadge(o.subscription?.status||'-')}</td><td>${o.users||0}</td><td>${o.plan?brl(o.plan.monthly_price):'-'}</td><td><button class="btn" onclick="Saas.openOrganization('${o.id}')">Gerenciar</button></td></tr>`).join(''):emptyRow(7,'Nenhuma empresa carregada.')}</tbody></table></div></section>
   <section class="card"><div class="section-title"><div><h3>Planos comerciais</h3><div class="sub">Defina preço, limites e quais planos podem ser vendidos.</div></div></div><div class="plan-grid">${plans.map(p=>`<article class="plan-card"><div class="plan-head"><div><h3>${esc(p.name)}</h3><small>${p.active?'Disponível para venda':'Inativo'}</small></div><button class="icon-btn" onclick="Saas.openPlan('${p.id}')">✎</button></div><div class="plan-price">${brl(p.monthly_price)}<small>/mês</small></div><div class="summary-list"><div><span>Anual</span><b>${brl(p.yearly_price)}</b></div><div><span>Usuários</span><b>${p.max_users}</b></div><div><span>Clientes</span><b>${p.max_clients??'Ilimitado'}</b></div><div><span>Trial</span><b>${p.trial_days||0} dias</b></div></div></article>`).join('')}</div></section>`,`Super Admin`,`Gestão comercial e operacional do Zahav Finance OS SaaS`);
 }
+
+const renderFinanceBase=render;
+render=function(){
+  if(subscriptionLocked()&&!['subscription','settings','superadmin'].includes(page))page='subscription';
+  const saasFn={subscription:subscriptionPage,superadmin:superAdminPage}[page];
+  if(!saasFn)return renderFinanceBase();
+  $('#app').innerHTML=saasFn();
+  bind();
+  window.scrollTo(0,0);
+};

@@ -19,6 +19,11 @@ jobs:
       - name: Syntax check
         run: |
           node --check app.js
+          node --check js/core.js
+          node --check js/pages.js
+          node --check js/ui.js
+          node --check js/forms.js
+          node --check js/runtime.js
           node --check server.mjs
           node --check api-ai.js
       - name: Smoke test server
@@ -27,5 +32,10 @@ jobs:
           PID=$!
           sleep 2
           curl --fail http://127.0.0.1:3000/ >/dev/null
-          curl --fail http://127.0.0.1:3000/app.js >/dev/null
+          curl --fail http://127.0.0.1:3000/js/core.js >/dev/null
+          curl --fail http://127.0.0.1:3000/js/pages.js >/dev/null
+          curl --fail http://127.0.0.1:3000/js/ui.js >/dev/null
+          curl --fail http://127.0.0.1:3000/js/forms.js >/dev/null
+          curl --fail http://127.0.0.1:3000/js/runtime.js >/dev/null
+          curl --fail http://127.0.0.1:3000/styles.css >/dev/null
           kill $PID

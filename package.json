@@ -1,12 +1,12 @@
 {
   "name": "zahav-finance-os",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
-    "check": "node --check js/core.js && node --check js/ui.js && node --check js/pages.js && node --check js/pages-main.js && node --check js/pages-finance.js && node --check js/pages-strategy.js && node --check js/forms.js && node --check js/forms-entities.js && node --check js/forms-strategy.js && node --check js/cloud.js && node --check js/runtime.js && node --check js/runtime-io.js && node --check js/runtime-ai.js && node --check js/runtime-actions.js && node --check server.mjs && node --check api-ai.js && node --check api-config.js",
+    "check": "node --check js/core.js && node --check js/ui.js && node --check js/pages.js && node --check js/pages-main.js && node --check js/pages-finance.js && node --check js/pages-strategy.js && node --check js/pages-saas.js && node --check js/forms.js && node --check js/forms-entities.js && node --check js/forms-strategy.js && node --check js/cloud.js && node --check js/saas.js && node --check js/runtime.js && node --check js/runtime-io.js && node --check js/runtime-ai.js && node --check js/runtime-actions.js && node --check server.mjs && node --check api-ai.js && node --check api-config.js",
     "test": "node --test tests/*.test.mjs"
   },
   "engines": {

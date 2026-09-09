@@ -19,12 +19,13 @@ test('modelo SaaS possui planos, assinaturas e memberships',()=>{
   assert.match(migration,/create table if not exists public\.organization_subscriptions/i);
   assert.match(migration,/create table if not exists public\.organization_memberships/i);
   assert.match(migration,/trialing/);
+  assert.match(migration,/suspended/);
 });
 
 test('acesso financeiro é condicionado a assinatura ativa',()=>{
   assert.match(gate,/has_active_subscription/);
   assert.match(gate,/trialing/);
-  assert.match(gate,/suspended/);
+  assert.match(gate,/current_organization_id/);
 });
 
 test('frontend contém conta e painel de super admin',()=>{

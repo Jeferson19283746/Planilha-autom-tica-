@@ -20,14 +20,18 @@ jobs:
         run: npm run check
       - name: Unit tests
         run: npm test
-      - name: Smoke test server
+      - name: Smoke test server and SPA routes
         run: |
           node server.mjs > /tmp/zahav.log 2>&1 &
           PID=$!
+          trap 'kill $PID || true' EXIT
           sleep 2
           curl --fail http://127.0.0.1:3000/api/health | grep '"ok":true'
-          curl --fail http://127.0.0.1:3000/ >/dev/null
+          curl --fail http://127.0.0.1:3000/ | grep 'Zahav Finance OS'
+          curl --fail http://127.0.0.1:3000/dashboard | grep 'Zahav Finance OS'
+          curl --fail http://127.0.0.1:3000/clientes | grep 'Zahav Finance OS'
+          curl --fail http://127.0.0.1:3000/dre | grep 'Zahav Finance OS'
+          curl --fail http://127.0.0.1:3000/js/router.js >/dev/null
           curl --fail http://127.0.0.1:3000/js/core.js >/dev/null
           curl --fail http://127.0.0.1:3000/js/cloud.js >/dev/null
           curl --fail http://127.0.0.1:3000/js/runtime.js >/dev/null
-          kill $PID

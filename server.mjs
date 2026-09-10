@@ -7,6 +7,12 @@ const __dirname=path.dirname(fileURLToPath(import.meta.url));
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml'};
 
 function json(res,status,payload){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(payload))}
+function insideRoot(file){const rel=path.relative(__dirname,file);return rel===''||(!rel.startsWith('..')&&!path.isAbsolute(rel))}
+async function sendFile(res,file,method='GET'){
+ const data=await fs.readFile(file);
+ res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});
+ res.end(method==='HEAD'?undefined:data);
+}
 
 async function openAI(question,state){
   if(!process.env.OPENAI_API_KEY)return null;
@@ -22,19 +28,31 @@ async function openAI(question,state){
 
 const server=http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');
-  if(url.pathname==='/api/health'&&req.method==='GET')return json(res,200,{ok:true,service:'zahav-finance-os',version:'0.4.0'});
+  if(url.pathname==='/api/health'&&req.method==='GET')return json(res,200,{ok:true,service:'zahav-finance-os',version:'0.5.1'});
   if(url.pathname==='/api/config'&&req.method==='GET')return json(res,200,{supabaseUrl:process.env.SUPABASE_URL||'',supabaseAnonKey:process.env.SUPABASE_ANON_KEY||'',cloudEnabled:Boolean(process.env.SUPABASE_URL&&process.env.SUPABASE_ANON_KEY)});
   if(url.pathname==='/api/ai'&&req.method==='POST'){
     let body='';for await(const chunk of req)body+=chunk;if(body.length>2_000_000)return json(res,413,{error:'Payload too large'});
     try{const {question,state}=JSON.parse(body||'{}');if(!question||typeof question!=='string')return json(res,400,{error:'Pergunta inválida'});const answer=await openAI(question,state);return json(res,answer?200:503,{answer})}catch{return json(res,400,{error:'JSON inválido'})}
   }
   if(url.pathname.startsWith('/api/'))return json(res,404,{error:'Not found'});
+  if(!['GET','HEAD'].includes(req.method||''))return json(res,405,{error:'Method not allowed'});
+
   let requested=url.pathname==='/'?'/index.html':url.pathname;
   try{requested=decodeURIComponent(requested)}catch{return json(res,400,{error:'Bad request'})}
   const safe=path.normalize(requested).replace(/^(\.\.(\/|\\|$))+/, '').replace(/^[/\\]+/,'');
   const file=path.join(__dirname,safe);
-  if(!file.startsWith(__dirname))return json(res,403,{error:'Forbidden'});
-  try{const data=await fs.readFile(file);res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});res.end(data)}catch{res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'});res.end('Not found')}
+  if(!insideRoot(file))return json(res,403,{error:'Forbidden'});
+
+  try{
+    await sendFile(res,file,req.method);
+  }catch(err){
+    const isSpaRoute=!path.extname(safe);
+    if(isSpaRoute){
+      try{return await sendFile(res,path.join(__dirname,'index.html'),req.method)}catch{}
+    }
+    if(err?.code!=='ENOENT')console.error(err);
+    res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'});res.end('Not found');
+  }
 });
 
 const port=Number(process.env.PORT)||3000;

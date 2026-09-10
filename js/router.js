@@ -47,3 +47,10 @@ function navigatePage(nextPage,{replace=false}={}){
 
 syncPageFromRoute();
 window.addEventListener('popstate',()=>{page=pageFromRoute()||'dashboard';render()});
+document.addEventListener('click',event=>{
+ const trigger=event.target.closest?.('[data-nav]');
+ if(!trigger)return;
+ event.preventDefault();
+ event.stopImmediatePropagation();
+ navigatePage(trigger.dataset.nav);
+},true);
